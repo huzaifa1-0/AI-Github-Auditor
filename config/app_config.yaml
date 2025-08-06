@@ -9,7 +9,7 @@ system:
 
 llm:
   provider: local
-  model: mistral-7b.Q4_K_M.gguf
+  model: phi-2.Q4_K_M.gguf
   parameters:
     temperature: 0.3
     top_p: 0.95
