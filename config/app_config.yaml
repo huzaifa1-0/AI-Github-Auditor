@@ -1,0 +1,22 @@
+system:
+  platform: windows
+  temp_dir: ${TEMP}\\github-ai-agent
+  max_file_path_length: 260  
+  
+  resources:
+    cpu_threads: 4
+    max_memory: 4096  # MB
+
+llm:
+  provider: local
+  model: mistral-7b.Q4_K_M.gguf
+  parameters:
+    temperature: 0.3
+    top_p: 0.95
+    max_tokens: 1024
+
+analysis:
+  concurrent_files: 2
+  skip_large_files: true
+  max_file_size: 100  # KB
+  windows_path_handling: extended  
