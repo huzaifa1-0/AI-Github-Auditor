@@ -24,4 +24,9 @@ class AuditOrchestrator:
             analysis_results = self.analyzer.analyze_repository(temp_dir)
             context = AnalysisContext(repository=repo_url, analysis=analysis_results)
 
-            
+            llm_summary = self.llm.generate_audit_summary(context)
+
+            report = self.reporter.generate_markdown(context, llm_summary)
+
+        logger.info(f"Audit completed for this repository: {repo_url}")
+        return report
