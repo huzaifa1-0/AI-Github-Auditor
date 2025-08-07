@@ -39,5 +39,10 @@ class HuggingFaceLLM:
         except Exception as e:
             logger.error(f"LLM generation failed: {str(e)}")
             return "LLM analysis failed. Please check logs for details."
-        
-               
+
+    def _clean_response(self, text):
+        """Remove unnecessary parts from LLM response"""
+        if "[/INST]" in text:
+            return text.split("[/INST]")[-1].strip()
+        return text
+             
