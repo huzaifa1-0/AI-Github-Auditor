@@ -23,4 +23,69 @@ class StaticAnalyzer:
             files = find_files(repo_path, f"*.{ext}")
             for file_path in files:
                 relative_path = str(Path(file_path).relative_to(repo_path))
-                file_result = self.analyze_file()
+                file_result = self.analyze_file(file_path, ext)
+                results.append(
+                    FileAnalysis(
+                        file_path = relative_path,
+                        language = ext,
+                        results = file_result
+                    )
+                )
+        return AnalysisResult(files = results)
+    
+    def analyze_file(self, file_path, language):
+        results = {}
+        for tool in self.TOOLS.get(language,[]):
+            try:
+                if tool == "bandit":
+                    output = subprocess.check_output(
+                        ["bandit", "-f", "json", "-q", file_path],
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        creationflags=subprocess.CREATE_NO_WINDOW
+                    )
+                    results[tool] = json.loads(output)
+                elif tool == "pylint":
+                    output = subprocess.check_output(
+                        ["pylint", "--output-format=json", file_path],
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        creationflags=subprocess.CREATE_NO_WINDOW
+                    )
+                    results[tool] = json.loads(output)
+                elif tool == "eslint":
+                    output = subprocess.check_output(
+                        ["eslint", "--format=json", file_path],
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        creationflags=subprocess.CREATE_NO_WINDOW
+                    )
+                    results[tool] = json.loads(output)
+                elif tool == "yamllint":
+                    output = subprocess.check_output(
+                        ["yamllint", "-f", "parsable", file_path],
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        creationflags=subprocess.CREATE_NO_WINDOW
+                    )
+                    results[tool] = self.parse_yamllint(output)
+            except Exception as e:
+                logger.warning(f"{tool} failed on {file_path}: {str(e)}")
+                results[tool] = {"error": str(e)}
+        return results
+    
+    def parse_yamllint(self, output):
+        issues = []
+        for line in output.strip().split('\n'):
+            if not line:
+                continue
+            parts = line.split(':')
+            if len(parts) >= 4:
+                issues.append({
+                    "file": parts[0],
+                    "line": int(parts[1]),
+                    "column": int(parts[2]),
+                    "level": parts[3].strip()[0],
+                    "message": parts[3].strip()[2:]
+                })
+        return issues
