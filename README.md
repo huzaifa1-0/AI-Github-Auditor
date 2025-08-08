@@ -139,7 +139,6 @@ AI GitHub Auditor/
 ├── src/
 │   ├── agents/              # AI orchestration and task management
 │   │   ├── orchestrator.py  # Main audit coordinator
-│   │   └── task_dispatcher.py # Task distribution and management
 │   ├── api/                 # External service integrations
 │   │   ├── github/         # GitHub API client and utilities
 │   │   └── huggingface.py  # LLM integration layer
@@ -148,7 +147,6 @@ AI GitHub Auditor/
 │   │   └── reporting/      # Report generation and formatting
 │   ├── data_models/        # Data structures and schemas
 │   ├── utils/              # Utility functions and helpers
-│   └── workers/            # Background task processors
 ├── config/                 # Configuration files and templates
 ├── outputs/               # Generated reports and artifacts
 └── docker/               # Container deployment files
