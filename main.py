@@ -1,11 +1,46 @@
+
 import os
 import sys
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from pathlib import Path
+from dotenv import load_dotenv
 from src.agents.orchestrator import AuditOrchestrator
 from src.utils.logger import configure_logger
 from src.utils.windows_fixes import enable_long_paths, fix_win32_unicode
 from src.utils.cpu_optimization import optimize_cpu_settings
 
+
+def load_environment():
+    # Get the directory of the current script
+    base_dir = Path(__file__).resolve().parent
+    
+    # Try loading .env from several locations
+    env_paths = [
+        base_dir / ".env",
+        base_dir / "config" / ".env",
+        base_dir / "src" / ".env"
+    ]
+    
+    for path in env_paths:
+        if path.exists():
+            print(f"Loading environment from: {path}")
+            load_dotenv(dotenv_path=path)
+            return True
+    
+    print("No .env file found!")
+    return False
+
 if __name__ == "__main__":
+
+    if not load_environment():
+        print("ERROR: Could not find .env file")
+        sys.exit(1)
+    
+    # Print environment variables for debugging
+    print("\nEnvironment variables:")
+    for key in ["GITHUB_TOKEN", "LOCAL_LLM_MODEL_PATH", "LLM_THREADS"]:
+        print(f"{key}: {os.getenv(key, 'Not set')}")
     
     fix_win32_unicode()
     enable_long_paths()

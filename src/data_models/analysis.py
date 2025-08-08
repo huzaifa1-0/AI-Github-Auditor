@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict,Any,List
+from typing import Dict, Any, List, Type
 from src.data_models.repository import Repository
 
 class FileAnalysis(BaseModel):
@@ -11,11 +11,11 @@ class AnalysisResult(BaseModel):
     files: List[FileAnalysis]
 
 class AnalysisContext(BaseModel):
-    repository = Repository
-    analysis: AnalysisResult
-
+    repository: Repository  # Now properly type-annotated
+    analysis: AnalysisResult  # Now properly type-annotated
+    
     def to_dict(self):
-        return{
+        return {
             "repository": self.repository.dict(),
             "analysis": {
                 "files": [
