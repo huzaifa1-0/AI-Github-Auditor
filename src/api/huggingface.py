@@ -41,7 +41,10 @@ class HuggingFaceLLM:
                 
                 # Explicitly move model to CPU
                 model = model.to('cpu')
-                model.eval()  # Set to evaluation mode
+                model.eval()  
+
+                cls._instance.tokenizer = tokenizer
+                cls._instance.model = model
                 
                 # Create text generation pipeline without device argument
                 cls._instance.pipeline = pipeline(
@@ -57,6 +60,55 @@ class HuggingFaceLLM:
                 raise RuntimeError(f"Model loading failed: {str(e)}")
         
         return cls._instance
+
+    def _generate_in_chunks(self, prompt, max_new_tokens=384):
+        """
+        Splits prompt into chunks that fit model context size, generates sequentially.
+        """
+        tokenizer = self.tokenizer
+        model = self.model
+        
+        # Get model context limit
+        max_length = getattr(model.config, "max_position_embeddings", 2048)
+        
+        # Tokenize prompt
+        input_ids = tokenizer.encode(prompt, return_tensors="pt")
+        total_tokens = input_ids.shape[1]
+
+        if total_tokens <= max_length:
+            # No need to chunk
+            outputs = model.generate(
+                input_ids,
+                max_new_tokens=max_new_tokens,
+                temperature=0.3,
+                top_p=0.95,
+                do_sample=True,
+                pad_token_id=tokenizer.eos_token_id
+            )
+            return tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        logger.warning(
+            f"Prompt too long ({total_tokens} tokens). Splitting into chunks of {max_length} tokens."
+        )
+
+        # Generate in chunks
+        generated_text = ""
+        for start in range(0, total_tokens, max_length):
+            end = min(start + max_length, total_tokens)
+            chunk_ids = input_ids[:, start:end]
+
+            outputs = model.generate(
+                chunk_ids,
+                max_new_tokens=max_new_tokens,
+                temperature=0.3,
+                top_p=0.95,
+                do_sample=True,
+                pad_token_id=tokenizer.eos_token_id
+            )
+            generated_text += tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        return generated_text
+
     
     def generate_audit_summary(self, analysis_results):
         prompt_template = read_prompt_template("audit_prompt.md")
@@ -65,16 +117,8 @@ class HuggingFaceLLM:
             findings=str(analysis_results.to_dict()))
         
         try:
-            # Generate response with memory optimization
-            response = self.pipeline(
-                prompt,
-                max_new_tokens=384,  # Reduced to save memory
-                temperature=0.3,
-                top_p=0.95,
-                do_sample=True,
-                pad_token_id=self.pipeline.tokenizer.eos_token_id
-            )
-            return response[0]['generated_text']
+            # Now using chunked generation to avoid token overflow errors
+            return self._generate_in_chunks(prompt, max_new_tokens=384)
         except Exception as e:
             logger.error(f"LLM generation failed: {str(e)}")
             return "LLM analysis failed. Please check logs for details."
