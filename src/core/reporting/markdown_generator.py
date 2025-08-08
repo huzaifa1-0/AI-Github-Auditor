@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 from datetime import datetime
+import pypandoc
 from src.data_models.report import AuditReport
 from src.utils.file_utils import ensure_dir_exists
 
@@ -61,6 +62,9 @@ class ReportGenerator:
             f.write("| Tool | Version |\n|------|---------|\n")
             f.write(f"| Bandit | {self._get_tool_version('bandit')} |\n")
             f.write(f"| Pylint | {self._get_tool_version('pylint')} |\n")
+        
+        pdf_filepath = filepath.replace(".md", ".pdf")
+        self._export_pdf(filepath, pdf_filepath)
             
         return AuditReport(
             repository=analysis_results.repository,
@@ -68,6 +72,20 @@ class ReportGenerator:
             summary=llm_summary,
             generated_at=timestamp
         )
+    
+    def _export_pdf(self, md_path, pdf_path):
+        """Convert Markdown to PDF using pypandoc"""
+        try:
+            pypandoc.convert_file(
+                md_path,
+                'pdf',
+                outputfile=pdf_path,
+                extra_args=['--standalone']
+            )
+            print(f"✅ PDF report generated: {pdf_path}")
+        except OSError as e:
+            print(f"⚠️ PDF generation failed. Ensure Pandoc is installed. Error: {e}")
+
 
     def _write_file_analysis(self, f, file_analysis):
         f.write(f"### 📄 File: `{file_analysis.file_path}`\n")
