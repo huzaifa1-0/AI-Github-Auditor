@@ -12,10 +12,10 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load_environment():
-    # Get the directory of the current script
+    
     base_dir = Path(__file__).resolve().parent
 
-    # Try loading .env from several locations
+    
     env_paths = [
         base_dir / ".env",
         base_dir / "config" / ".env",
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         print("ERROR: Could not find .env file")
         sys.exit(1)
 
-    # Print environment variables for debugging
+    
     print("\nEnvironment variables:")
     for key in ["GITHUB_TOKEN", "LOCAL_LLM_MODEL_PATH", "LLM_THREADS"]:
         print(f"{key}: {os.getenv(key, 'Not set')}")
