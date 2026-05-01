@@ -1,14 +1,16 @@
-import os
-import sys
-from pathlib import Path
-from dotenv import load_dotenv
-import argparse
-
 from src.utils.cpu_optimization import optimize_cpu_settings
 from src.utils.windows_fixes import enable_long_paths, fix_win32_unicode
 from src.utils.logger import configure_logger
 from src.agents.orchestrator import AuditOrchestrator
+from dotenv import load_dotenv
+from pathlib import Path
+import os
+import sys
+import argparse
+import pandas as pd
 
+# Add current directory to path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # ---- Constants -------------------------------------------------
 

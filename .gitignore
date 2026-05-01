@@ -1,1 +1,50 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+bin/
+lib/
+include/
+share/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment Variables (Secrets)
+.env
+.env.*
+!.env.example
+
+# Project Specific
+.cache/
+logs/
+outputs/
+*.log
+temp/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# Media
+*.mp4
+
+# Static Analysis / Tooling
+.bandit/
+.pylintrc
+.eslintcache
+
+# Other
 index.lock
